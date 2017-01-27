@@ -12,7 +12,7 @@ import CoreData
 @objc(Member)
 class Member: NSManagedObject {
 
-    @NSManaged var birthday: NSDate
+    @NSManaged var birthday: Date
     @NSManaged var name: String
     @NSManaged var sex: String
     @NSManaged var family: Family

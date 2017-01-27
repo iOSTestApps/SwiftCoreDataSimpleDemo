@@ -14,7 +14,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var window: UIWindow?
     
-    func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
 //        self.window = UIWindow(frame: UIScreen.mainScreen().bounds)
 //        
 //        // Override point for customization after application launch.
@@ -24,30 +24,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
     
-    func applicationWillResignActive(application: UIApplication) {
+    func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
     }
     
-    func applicationDidEnterBackground(application: UIApplication) {
+    func applicationDidEnterBackground(_ application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
         
         self.cdh.saveContext()
     }
     
-    func applicationWillEnterForeground(application: UIApplication) {
+    func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
     }
     
-    func applicationDidBecomeActive(application: UIApplication) {
+    func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
         
         self.demoFamily()
         self.demoMember()
     }
     
-    func applicationWillTerminate(application: UIApplication) {
+    func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         // Saves changes in the application's managed object context before the application terminates.
         
@@ -78,7 +78,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         NSLog(" ======== Insert ======== ")
         
         for newItemName in newItemNames {
-            let newItem: Family = NSEntityDescription.insertNewObjectForEntityForName("Family", inManagedObjectContext: self.cdh.backgroundContext!) as! Family
+            let newItem: Family = NSEntityDescription.insertNewObject(forEntityName: "Family", into: self.cdh.backgroundContext!) as! Family
             
             newItem.name = newItemName
             NSLog("Inserted New Family for \(newItemName) ")
@@ -89,9 +89,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //fetch families
         NSLog(" ======== Fetch ======== ")
         var error: NSError? = nil
-        var fReq: NSFetchRequest = NSFetchRequest(entityName: "Family")
+        var fReq: NSFetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Family")
         
-        fReq.predicate = NSPredicate(format:"name CONTAINS 'B' ")
+        fReq.predicate = NSPredicate(format: "name CONTAINS 'B'")
         
         let sorter: NSSortDescriptor = NSSortDescriptor(key: "name" , ascending: false)
         fReq.sortDescriptors = [sorter]
@@ -100,7 +100,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         var result: [AnyObject]?
         do {
-            result = try self.cdh.managedObjectContext.executeFetchRequest(fReq)
+            result = try self.cdh.managedObjectContext.fetch(fReq)
         } catch let nserror1 as NSError{
             error = nserror1
             result = nil
@@ -116,7 +116,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         fReq = NSFetchRequest(entityName: "Family")
         do {
-            result = try self.cdh.backgroundContext!.executeFetchRequest(fReq)
+            result = try self.cdh.backgroundContext!.fetch(fReq)
         } catch let nserror1 as NSError{
             error = nserror1
             result = nil
@@ -125,7 +125,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         for resultItem in result! {
             let familyItem = resultItem as! Family
             NSLog("Deleted Family for \(familyItem.name) ")
-            self.cdh.backgroundContext!.deleteObject(familyItem)
+            self.cdh.backgroundContext!.delete(familyItem)
         }
         
         self.cdh.saveContext(self.cdh.backgroundContext!)
@@ -133,7 +133,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         NSLog(" ======== Check Delete ======== ")
         
         do {
-            result = try self.cdh.managedObjectContext.executeFetchRequest(fReq)
+            result = try self.cdh.managedObjectContext.fetch(fReq)
         } catch let nserror1 as NSError{
             error = nserror1
             result = nil
@@ -153,7 +153,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         NSLog(" ======================== ")
         NSLog(" ======== Member ======== ")
         
-        let family: Family = NSEntityDescription.insertNewObjectForEntityForName("Family", inManagedObjectContext: self.cdh.backgroundContext!) as! Family
+        let family: Family = NSEntityDescription.insertNewObject(forEntityName: "Family", into: self.cdh.backgroundContext!) as! Family
         family.name = "Fruits"
         
         // add Members
@@ -163,7 +163,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         NSLog(" ======== Insert Member with family attribute ======== ")
         var error: NSError? = nil
         for newItemName in newItemNames {
-            let newItem: Member = NSEntityDescription.insertNewObjectForEntityForName("Member", inManagedObjectContext: self.cdh.backgroundContext!) as! Member
+            let newItem: Member = NSEntityDescription.insertNewObject(forEntityName: "Member", into: self.cdh.backgroundContext!) as! Member
             
             newItem.name = newItemName
             newItem.family = family
@@ -174,17 +174,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         //fetch Member
         NSLog(" ======== Fetch Members ======== ")
-        
-        var fReq: NSFetchRequest = NSFetchRequest(entityName: "Member")
-        
-        fReq.predicate = NSPredicate(format:"name CONTAINS 'B' ")
+        var fReq: NSFetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Member")
+        fReq.predicate = NSPredicate(format: "name CONTAINS 'B'")
         
         let sorter: NSSortDescriptor = NSSortDescriptor(key: "name" , ascending: false)
         fReq.sortDescriptors = [sorter]
         
         var result: [AnyObject]?
         do {
-            result = try self.cdh.managedObjectContext.executeFetchRequest(fReq)
+            result = try self.cdh.managedObjectContext.fetch(fReq)
         } catch let nserror1 as NSError{
             error = nserror1
             result = nil
@@ -200,7 +198,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         fReq.predicate = NSPredicate(format:"name == 'Fruits' ")
         
         do {
-            result = try self.cdh.managedObjectContext.executeFetchRequest(fReq)
+            result = try self.cdh.managedObjectContext.fetch(fReq)
         } catch let nserror1 as NSError{
             error = nserror1
             result = nil
@@ -219,7 +217,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         NSLog(" ======== Delete Family with cascade delete Members ======== ")
         
         let familyItem = result![0] as! Family
-        self.cdh.managedObjectContext.deleteObject(familyItem)
+        self.cdh.managedObjectContext.delete(familyItem)
         
         self.cdh.saveContext(self.cdh.managedObjectContext)
         
@@ -228,7 +226,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         fReq = NSFetchRequest(entityName: "Member")
         
         do {
-            result = try self.cdh.backgroundContext!.executeFetchRequest(fReq)
+            result = try self.cdh.backgroundContext!.fetch(fReq)
         } catch let nserror1 as NSError{
             error = nserror1
             result = nil
